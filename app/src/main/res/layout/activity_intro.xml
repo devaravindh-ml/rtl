@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B1120">
+
+    <TextView
+        android:id="@+id/tvAiCompanionLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:text="AI COMPANION"
+        android:textColor="#4B5563"
+        android:textSize="12sp"
+        android:letterSpacing="0.1"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/ivSignal"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginEnd="24dp"
+        android:src="@drawable/ic_signal_bars"
+        app:layout_constraintBottom_toBottomOf="@id/tvAiCompanionLabel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvAiCompanionLabel"
+        app:tint="#4B5563" />
+
+    <ScrollView
+        android:id="@+id/mainScrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:fillViewport="true"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/tvAiCompanionLabel"
+        app:layout_constraintBottom_toTopOf="@id/btnStartReading"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingBottom="24dp">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/bookCoverContainer"
+                android:layout_width="180dp"
+                android:layout_height="240dp"
+                android:layout_marginTop="20dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/img_monica_sharma_book" />
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="RADICAL"
+                android:textColor="#FFFFFF"
+                android:textSize="30sp"
+                android:letterSpacing="0.2"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TRANSFORMATIONAL"
+                android:textColor="#3B82F6"
+                android:textSize="24sp"
+                android:letterSpacing="0.1"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LEADERSHIP"
+                android:textColor="#FFFFFF"
+                android:textSize="30sp"
+                android:letterSpacing="0.2"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingHorizontal="40dp"
+                android:text="A high-end AI-powered study companion\nfor profound systemic change."
+                android:textColor="#94A3B8"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"
+                android:textAlignment="center" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="24dp"
+                android:src="@drawable/ic_double_arrow_up"
+                app:tint="#3B82F6" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="SWIPE TO BEGIN"
+                android:textColor="#4B5563"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </ScrollView>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnStartReading"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_button_glass"
+        android:text="START READING      >"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavIcons"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/bottomNavIcons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_marginHorizontal="16dp" android:src="@drawable/ic_book_open" app:tint="#4B5563" />
+        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_marginHorizontal="16dp" android:src="@drawable/ic_sparkle_circle" app:tint="#4B5563" />
+        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_marginHorizontal="16dp" android:src="@drawable/ic_bookmark" app:tint="#4B5563" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

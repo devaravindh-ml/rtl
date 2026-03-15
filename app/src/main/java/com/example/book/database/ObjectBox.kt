@@ -2,15 +2,19 @@ package com.example.book.database
 
 import android.content.Context
 import io.objectbox.BoxStore
-// This imports the Java class into your Kotlin file
 import com.example.book.MyObjectBox
 
 object ObjectBox {
     lateinit var store: BoxStore
         private set
 
+    // Helper to check if it's ready
+    val isInitialized: Boolean
+        get() = this::store.isInitialized
+
     fun init(context: Context) {
-        // Kotlin handles the Java 'builder()' perfectly
+        if (isInitialized) return // Prevent double-initialization
+
         store = MyObjectBox.builder()
             .androidContext(context.applicationContext)
             .build()

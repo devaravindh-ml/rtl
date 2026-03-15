@@ -81,7 +81,8 @@
                 android:textColor="#3B82F6"
                 android:textSize="24sp"
                 android:letterSpacing="0.1"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textAlignment="center"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -124,14 +125,15 @@
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnStartReading"
         android:layout_width="0dp"
-        android:layout_height="64dp"
+        android:layout_height="60dp"
         android:layout_marginHorizontal="32dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="24dp"
         android:background="@drawable/bg_button_glass"
-        android:text="START READING      >"
+        android:text="START READING          >"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@id/bottomNavIcons"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

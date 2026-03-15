@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8FAFC">
@@ -14,9 +15,26 @@
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_menu" app:tint="#1E293B" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="My Study Notes" android:textColor="#1E293B" android:textSize="18sp" android:textStyle="bold" />
-            <ImageView android:id="@+id/ivUserProfile" android:layout_width="28dp" android:layout_height="28dp" android:layout_gravity="end" android:layout_marginEnd="16dp" android:src="@drawable/ic_user_profile" />
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_menu"
+                app:tint="#1E293B" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="My Study Notes"
+                android:textColor="#1E293B"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/ivUserProfile"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="end"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_user_profile" />
         </androidx.appcompat.widget.Toolbar>
 
         <com.google.android.material.tabs.TabLayout
@@ -26,7 +44,8 @@
             app:tabIndicatorColor="#3B82F6"
             app:tabSelectedTextColor="#3B82F6"
             app:tabTextColor="#64748B"
-            app:tabMode="fixed">
+            app:tabMode="fixed"
+            app:tabRippleColor="@null">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
@@ -62,13 +81,113 @@
                 android:layout_height="50dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center_vertical" android:paddingHorizontal="16dp">
-                    <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_search" app:tint="#94A3B8" />
-                    <EditText android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:background="@null" android:hint="Search your personal notes..." android:textSize="14sp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp">
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_search"
+                        app:tint="#94A3B8" />
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:background="@null"
+                        android:hint="Search your personal notes..."
+                        android:textSize="14sp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="Recent Notes" android:textColor="#0F172A" android:textSize="18sp" android:textStyle="bold" />
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:scrollbars="none">
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupFilters"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.chip.Chip
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="All"
+                        app:chipBackgroundColor="#EFF6FF"
+                        app:chipStrokeWidth="0dp"
+                        android:checked="true"/>
+
+                    <com.google.android.material.chip.Chip
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Definitions" />
+
+                    <com.google.android.material.chip.Chip
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Reflections" />
+
+                    <com.google.android.material.chip.Chip
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Action Items" />
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Recent Notes"
+                    android:textColor="#0F172A"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:text="View All"
+                    android:textColor="#3B82F6"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/llEmptyState"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/ic_edit"
+                    app:tint="#CBD5E1" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Your wisdom starts here."
+                    android:textColor="#64748B"
+                    android:textSize="16sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Double-tap a word in chat to save it."
+                    android:textColor="#94A3B8"
+                    android:textSize="13sp" />
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvRecentNotes"
@@ -87,7 +206,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="24dp"
         android:src="@drawable/ic_add"
-        app:backgroundTint="#0F5BA3"
-        app:tint="#FFFFFF" />
+        app:backgroundTint="#1D4ED8"
+        app:tint="#FFFFFF"
+        app:elevation="6dp"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -5,7 +5,7 @@ import android.content.Context
 class BookLoader(private val context: Context) {
 
     fun loadBook(): String {
-        return context.assets.open("book.txt")
+        return context.assets.open("rtl_book.txt")
             .bufferedReader()
             .use { it.readText() }
     }

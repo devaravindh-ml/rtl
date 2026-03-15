@@ -42,8 +42,8 @@
                 android:id="@+id/tvOnlineStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="● INITIALIZING"
-                android:textColor="#F59E0B"
+                android:text="● READY"
+                android:textColor="#10B981"
                 android:textSize="11sp" />
         </LinearLayout>
 
@@ -57,30 +57,17 @@
             android:src="@android:drawable/ic_dialog_info" />
     </androidx.appcompat.widget.Toolbar>
 
-    <com.github.barteksc.pdfviewer.PDFView
-        android:id="@+id/pdfView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/screenSplitGuideline"
-        app:layout_constraintTop_toBottomOf="@id/chatToolbar" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/screenSplitGuideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.45" />
-
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/chatScrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:padding="16dp"
         android:clipToPadding="false"
-        app:layout_constraintBottom_toTopOf="@id/inputSection"
-        app:layout_constraintTop_toBottomOf="@id/screenSplitGuideline">
+        app:layout_constraintTop_toBottomOf="@id/chatToolbar"
+        app:layout_constraintBottom_toTopOf="@id/inputSection">
 
         <LinearLayout
+            android:id="@+id/chatContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -89,6 +76,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"
                 android:background="@drawable/bg_date_chip"
                 android:paddingHorizontal="12dp"
@@ -96,17 +84,8 @@
                 android:text="TODAY"
                 android:textColor="#64748B"
                 android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/chatTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:lineSpacingExtra="4dp"
-                android:textColor="#1E293B"
-                android:textSize="16sp" />
-
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/loadingOverlay"
@@ -133,33 +112,43 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:progressDrawable="@android:drawable/progress_horizontal" />
+                android:indeterminate="true" />
 
             <TextView
                 android:id="@+id/tvProgressStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Unpacking AI: 0%"
+                android:text="Processing book..."
                 android:textColor="#1E293B"
                 android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/inputBottomGuideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.92" />
+
     <LinearLayout
         android:id="@+id/inputSection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
-        android:elevation="8dp"
+        android:elevation="12dp"
         android:orientation="vertical"
-        android:padding="12dp"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/inputBottomGuideline">
 
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="12dp"
             android:scrollbars="none">
 
             <LinearLayout
@@ -190,7 +179,7 @@
                     android:focusable="true"
                     android:paddingHorizontal="16dp"
                     android:paddingVertical="10dp"
-                    android:text="How to apply Systems Change"
+                    android:text="Systems Change"
                     android:textColor="#1E40AF"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -208,12 +197,14 @@
                 android:layout_weight="1"
                 android:background="@drawable/bg_input_field"
                 android:gravity="center_vertical"
-                android:padding="8dp">
+                android:padding="12dp">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_attach"
+                <ImageButton
+                    android:id="@+id/btnVoiceInput"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_btn_speak_now"
                     app:tint="#64748B" />
 
                 <EditText
@@ -222,16 +213,10 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@null"
-                    android:hint="Type your question..."
-                    android:paddingStart="8dp"
+                    android:hint="Ask about the book..."
+                    android:paddingStart="12dp"
                     android:textColor="#1E293B"
-                    android:textSize="15sp" />
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_emoji"
-                    app:tint="#64748B" />
+                    android:textSize="16sp" />
             </LinearLayout>
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -240,7 +225,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 app:backgroundTint="#3B82F6"
-                app:fabCustomSize="48dp"
+                app:fabCustomSize="52dp"
                 app:srcCompat="@android:drawable/ic_menu_send"
                 app:tint="#FFFFFF" />
         </LinearLayout>

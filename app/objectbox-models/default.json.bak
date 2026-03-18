@@ -26,9 +26,53 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "2:4274718642400717166",
+      "lastPropertyId": "7:2035762465965447695",
+      "name": "Book",
+      "properties": [
+        {
+          "id": "1:7147150809106001719",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2315268719795645191",
+          "name": "title",
+          "type": 9
+        },
+        {
+          "id": "3:8551031496678651279",
+          "name": "author",
+          "type": 9
+        },
+        {
+          "id": "4:5379903408893583431",
+          "name": "uri",
+          "type": 9
+        },
+        {
+          "id": "5:1214870784844218748",
+          "name": "coverPath",
+          "type": 9
+        },
+        {
+          "id": "6:7939183298517726130",
+          "name": "lastReadLocation",
+          "type": 9
+        },
+        {
+          "id": "7:2035762465965447695",
+          "name": "addedDate",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "1:6467288176771225950",
+  "lastEntityId": "2:4274718642400717166",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

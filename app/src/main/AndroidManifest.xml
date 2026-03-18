@@ -34,6 +34,8 @@
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:exported="false" />
 
+
+
         <activity android:name=".Library" android:exported="false" />
         <activity android:name=".ChatAssistant" android:exported="false" />
         <activity android:name=".Insights" android:exported="false" />

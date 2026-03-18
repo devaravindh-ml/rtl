@@ -1,5 +1,6 @@
 package com.example.book
 
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -8,6 +9,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.speech.tts.TextToSpeech
+import android.util.Log
 import android.view.GestureDetector
 import android.view.Gravity
 import android.view.MotionEvent
@@ -19,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
 import com.example.book.database.BookChunk
+import com.example.book.database.BookChunk_
 import com.example.book.database.BookDataProcessor
 import com.example.book.database.ObjectBox
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -72,7 +75,21 @@ class ChatAssistant : AppCompatActivity(), TextToSpeech.OnInitListener {
             try {
                 updateStatus("● LOADING AI")
                 embeddingGenerator = EmbeddingGenerator.create(applicationContext, "embedding.onnx")
-                initBookDatabase()
+
+                val bookBox = ObjectBox.store.boxFor(BookChunk::class.java)
+                if (bookBox.count() <= 1L) {
+                    val generator = embeddingGenerator
+                    if (generator != null) {
+                        withContext(Dispatchers.Main) { loadingOverlay.visibility = View.VISIBLE }
+                        withContext(Dispatchers.IO) {
+                            bookBox.removeAll()
+                            val content = assets.open("rtl_book.txt").bufferedReader().use { it.readText() }
+                            BookDataProcessor(generator).processBookText(content)
+                        }
+                        withContext(Dispatchers.Main) { loadingOverlay.visibility = View.GONE }
+                    }
+                }
+
                 isReady = true
                 updateStatus("● READY")
                 addChatBubble("AI is ready. Ask me anything about the book!", false)
@@ -91,39 +108,82 @@ class ChatAssistant : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
     }
 
-    private fun addChatBubble(text: String, isUser: Boolean) {
-        val layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            val sideMargin = (resources.displayMetrics.widthPixels * 0.15).toInt()
-            setMargins(if (isUser) sideMargin else 24, 16, if (isUser) 24 else sideMargin, 16)
+    private fun addChatBubble(text: String, isUser: Boolean, chunk: BookChunk? = null) {
+        val horizontalContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
             gravity = if (isUser) android.view.Gravity.END else android.view.Gravity.START
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, 12, 0, 12)
+            }
+        }
+
+        // 1. LEFT SIDE: Custom Book Icon (Only for AI)
+        if (!isUser) {
+            val bookIconContainer = android.widget.FrameLayout(this).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    (40 * resources.displayMetrics.density).toInt(),
+                    (40 * resources.displayMetrics.density).toInt()
+                ).apply {
+                    setMargins(0, 0, 8, 0)
+                    gravity = android.view.Gravity.TOP
+                }
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                    setColor(android.graphics.Color.WHITE)
+                    setStroke(1, android.graphics.Color.parseColor("#E2E8F0"))
+                }
+                elevation = 2f
+            }
+            val iconView = ImageView(this).apply {
+                setImageResource(R.drawable.ic_custom_book)
+                setColorFilter(android.graphics.Color.parseColor("#3B82F6"))
+                setPadding(16, 16, 16, 16)
+            }
+            bookIconContainer.addView(iconView)
+            horizontalContainer.addView(bookIconContainer)
+        }
+
+        // 2. MIDDLE: Bubble Wrapper (Weight 1f makes room for the TTS button on the right)
+        val bubbleWrapper = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+            )
+
+            if (!isUser) {
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    setColor(android.graphics.Color.parseColor("#F0F9FF")) // Light Blue Background
+                    cornerRadius = 24f
+                }
+                setPadding(8, 8, 8, 8)
+            }
         }
 
         val textView = TextView(this).apply {
-            this.text = text
-            this.setPadding(48, 32, 48, 32)
-            this.textSize = 16f
+            this.setText(text)
+            this.setPadding(40, 32, 40, 32)
+            this.textSize = 15f
             this.setTextColor(if (isUser) android.graphics.Color.WHITE else android.graphics.Color.parseColor("#1E293B"))
             this.setBackgroundResource(if (isUser) R.drawable.bg_bubble_user else R.drawable.bg_bubble_ai)
-            this.layoutParams = layoutParams
             this.elevation = 2f
 
+            // --- RESTORED LOGIC: Double Tap to Define Word ---
             val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
-                override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                    toggleSpeech(text)
-                    return true
-                }
-
                 override fun onDoubleTap(e: MotionEvent): Boolean {
-                    // Visual Effect: Brief flash animation
-                    val flash = AlphaAnimation(1f, 0.5f)
-                    flash.duration = 100
-                    flash.repeatCount = 1
-                    flash.repeatMode = android.view.animation.Animation.REVERSE
+                    // Flash animation for feedback
+                    val flash = AlphaAnimation(1f, 0.5f).apply {
+                        duration = 100
+                        repeatCount = 1
+                        repeatMode = android.view.animation.Animation.REVERSE
+                    }
                     startAnimation(flash)
 
+                    // Get word meaning logic
                     val offset = getOffsetForPosition(e.x, e.y)
                     val word = getWordAtOffset(text, offset)
                     if (word.isNotEmpty()) {
@@ -138,17 +198,59 @@ class ChatAssistant : AppCompatActivity(), TextToSpeech.OnInitListener {
                 true
             }
         }
+        bubbleWrapper.addView(textView)
 
-        chatContainer.addView(textView)
+        // View in Book Button Logic
+        if (!isUser && chunk != null) {
+            val btnSource = Button(this).apply {
+                this.setText("View in Book 📖")
+                this.textSize = 12f
+                this.isAllCaps = false
+                this.setTextColor(android.graphics.Color.parseColor("#3B82F6"))
+                this.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                this.setOnClickListener {
+                    val intent = Intent(context, ReaderActivity::class.java).apply {
+                        putExtra("CHUNK_ID", chunk.id)
+                        flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                    }
+                    startActivity(intent)
+                }
+            }
+            bubbleWrapper.addView(btnSource)
+        }
+
+        horizontalContainer.addView(bubbleWrapper)
+
+        // 3. RIGHT SIDE: Speaking Voice Button (Now Visible and anchored to bottom right)
+        if (!isUser) {
+            val playButton = ImageButton(this).apply {
+                setImageResource(android.R.drawable.ic_media_play)
+                setColorFilter(android.graphics.Color.parseColor("#3B82F6"))
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                    setColor(android.graphics.Color.parseColor("#EEF2FF"))
+                }
+                val size = (40 * resources.displayMetrics.density).toInt()
+                layoutParams = LinearLayout.LayoutParams(size, size).apply {
+                    gravity = android.view.Gravity.BOTTOM
+                    setMargins(8, 0, 8, 8)
+                }
+
+                setOnClickListener {
+                    if (tts.isSpeaking) {
+                        tts.stop()
+                        setImageResource(android.R.drawable.ic_media_play)
+                    } else {
+                        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "SpeechID")
+                        setImageResource(android.R.drawable.ic_media_pause)
+                    }
+                }
+            }
+            horizontalContainer.addView(playButton)
+        }
+
+        chatContainer.addView(horizontalContainer)
         chatScrollView.post { chatScrollView.fullScroll(android.view.View.FOCUS_DOWN) }
-    }
-
-    private fun TextView.getOffsetForPosition(x: Float, y: Float): Int {
-        if (layout == null) return -1
-        val touchX = x - totalPaddingLeft
-        val touchY = y - totalPaddingTop
-        val line = layout.getLineForVertical(touchY.toInt())
-        return layout.getOffsetForHorizontal(line, touchX)
     }
 
     private fun getWordAtOffset(text: String, offset: Int): String {
@@ -158,13 +260,6 @@ class ChatAssistant : AppCompatActivity(), TextToSpeech.OnInitListener {
         var end = offset
         while (end < text.length && text[end].isLetterOrDigit()) end++
         return text.substring(start, end).replace(Regex("[^a-zA-Z]"), "")
-    }
-
-    private fun toggleSpeech(text: String) {
-        if (::tts.isInitialized) {
-            if (tts.isSpeaking) { tts.stop() }
-            else { tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "SpeechID") }
-        }
     }
 
     private fun showDefinitionPopup(word: String) {
@@ -179,7 +274,6 @@ class ChatAssistant : AppCompatActivity(), TextToSpeech.OnInitListener {
                     val s = startIdx + marker.length
                     response.substring(s, response.indexOf("\"", s))
                 } else "Definition not found."
-
                 withContext(Dispatchers.Main) { displayPopup(word, result) }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) { Toast.makeText(this@ChatAssistant, "Word not found.", Toast.LENGTH_SHORT).show() }
@@ -188,46 +282,25 @@ class ChatAssistant : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun displayPopup(word: String, definition: String) {
-        // 1. Initialize the BottomSheetDialog
         val dialog = BottomSheetDialog(this)
-
-        // 2. Inflate the custom layout we created (layout_dictionary_bottom_sheet.xml)
         val view = layoutInflater.inflate(R.layout.layout_dictionary_bottom_sheet, null)
-
-        // 3. Bind the views from the XML
         val tvWord = view.findViewById<TextView>(R.id.tvWordTitle)
         val tvDef = view.findViewById<TextView>(R.id.tvDefinition)
         val btnCopy = view.findViewById<Button>(R.id.btnCopy)
         val btnDismiss = view.findViewById<Button>(R.id.btnDismiss)
-
-        // 4. Set the content
-        // Capitalizes the first letter of the word for a title look
-        tvWord.text = word.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+        tvWord.text = word.replaceFirstChar { it.uppercase() }
         tvDef.text = definition
-
-        // 5. Logic for the 'Copy' button
         btnCopy.setOnClickListener {
             val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText("definition", "$word: $definition")
             clipboard.setPrimaryClip(clip)
             Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_SHORT).show()
         }
-
-        // 6. Logic for the 'Dismiss' button
-        btnDismiss.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        // 7. Configure and show the dialog
+        btnDismiss.setOnClickListener { dialog.dismiss() }
         dialog.setContentView(view)
-
-        // This removes the default gray background from the dialog container
-        // so our rounded CardView corners are visible
         (view.parent as View).setBackgroundColor(android.graphics.Color.TRANSPARENT)
-
         dialog.show()
     }
-    // --- REMAINDER OF YOUR LOGIC ---
 
     private fun startVoiceInput() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -248,40 +321,63 @@ class ChatAssistant : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private fun sendQuickQuery(text: String) { if (isReady) performSearch(text) }
 
-    private suspend fun initBookDatabase() {
-        val bookBox = ObjectBox.store.boxFor(BookChunk::class.java)
-        if (bookBox.count() <= 1L) {
-            val generator = embeddingGenerator ?: return
-            withContext(Dispatchers.Main) { loadingOverlay.visibility = View.VISIBLE }
-            withContext(Dispatchers.IO) {
-                bookBox.removeAll()
-                val content = assets.open("rtl_book.txt").bufferedReader().use { it.readText() }
-                BookDataProcessor(generator).processBookText(content)
-            }
-            withContext(Dispatchers.Main) { loadingOverlay.visibility = View.GONE }
-        }
-    }
-
     private fun performSearch(query: String) {
         addChatBubble(query, true)
+
+        val thinkingBubble = TextView(this).apply {
+            this.text = "AI is thinking..."
+            this.setPadding(32, 16, 32, 16)
+            this.textSize = 12f
+            this.alpha = 0.6f
+            this.setTextColor(android.graphics.Color.GRAY)
+        }
+        chatContainer.addView(thinkingBubble)
+
         lifecycleScope.launch(Dispatchers.Default) {
             val bookBox = ObjectBox.store.boxFor(BookChunk::class.java)
-            val queryEmbedding = embeddingGenerator?.generateEmbedding(query) ?: return@launch
-            var bestMatch: BookChunk? = null
-            var maxScore = -1f
-            for (chunk in bookBox.all) {
-                val score = cosineSimilarity(queryEmbedding, chunk.embedding ?: continue)
-                if (score > maxScore) { maxScore = score; bestMatch = chunk }
-            }
-            val resultText = if (maxScore > 0.35f) bestMatch?.text ?: "" else "No answer found."
-            withContext(Dispatchers.Main) { addChatBubble(resultText, false) }
-        }
-    }
+            Log.d("SEARCH_DEBUG", "Total Chunks in DB: ${bookBox.count()}")
+            withContext(Dispatchers.Main) { updateStatus("● SEARCHING BOOK...") }
 
-    private fun cosineSimilarity(a: FloatArray, b: FloatArray): Float {
-        var dot = 0f; var nA = 0f; var nB = 0f
-        for (i in a.indices) { dot += a[i] * b[i]; nA += a[i] * a[i]; nB += b[i] * b[i] }
-        return if (nA == 0f || nB == 0f) 0f else (dot / (Math.sqrt(nA.toDouble()) * Math.sqrt(nB.toDouble()))).toFloat()
+            // Generate the vector for the user's query
+            val queryEmbedding = embeddingGenerator?.generateEmbedding(query) ?: return@launch
+
+            // --- This is the Symmetric Search in action ---
+            val queryBuilder = bookBox.query(
+                BookChunk_.embedding.nearestNeighbors(queryEmbedding, 1)
+            ).build()
+
+            val results = queryBuilder.findWithScores()
+            // ----------------------------------------------
+
+            withContext(Dispatchers.Main) {
+                chatContainer.removeView(thinkingBubble)
+                updateStatus("● READY")
+            }
+
+            if (results.isNotEmpty()) {
+                val result = results[0]
+                val score = result.score
+                val bestMatch = result.get()
+
+                // Symmetric Search: using 0.40f as the strict threshold for strong matches
+                if (score > 0.40f) {
+                    withContext(Dispatchers.Main) {
+                        // Add (Score: $score) to the text so you can see it on your screen
+                        addChatBubble("Match: ${String.format("%.2f", score)}\n\n${bestMatch.text}", false, chunk = bestMatch)
+                    }
+
+                } else {
+                    withContext(Dispatchers.Main) {
+                        addChatBubble("I'm not quite sure about that based on the book.", false)
+                    }
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    addChatBubble("I'm sorry, no information was found.", false)
+                }
+            }
+            queryBuilder.close()
+        }
     }
 
     private suspend fun updateStatus(text: String) = withContext(Dispatchers.Main) {

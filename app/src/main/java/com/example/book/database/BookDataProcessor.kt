@@ -14,24 +14,33 @@ class BookDataProcessor(
         // 1. Reset everything
         bookBox.removeAll()
 
-        // 2. Break text into 700-character pieces
-        val finalChunks = rawText.chunked(700)
-
-        // DEBUG: Check if we actually have chunks to save
-        println("DEBUG: Text length is ${rawText.length}")
-        println("DEBUG: Number of chunks created: ${finalChunks.size}")
+        // 2. SMART CHUNKING: Split by double newlines or sentences to preserve meaning
+        // Symmetric search works best when chunks are meaningful paragraphs.
+        val paragraphs = rawText.split("\n\n")
+            .filter { it.trim().length > 20 } // Ignore empty lines/tiny fragments
+            .map { it.trim() }
 
         val bookObjectsToSave = mutableListOf<BookChunk>()
 
-        for (textPiece in finalChunks) {
-            val vector = embeddingGenerator.generateEmbedding(textPiece)
-            // We do NOT set the ID here. ObjectBox handles it because it's 0.
-            bookObjectsToSave.add(BookChunk(text = textPiece, embedding = vector))
+        for (paragraph in paragraphs) {
+            // If a paragraph is too long (over 1000 chars), split it further
+            if (paragraph.length > 1000) {
+                val subChunks = paragraph.chunked(800)
+                for (sub in subChunks) {
+                    val vector = embeddingGenerator.generateEmbedding(sub)
+                    bookObjectsToSave.add(BookChunk(text = sub, embedding = vector))
+                }
+            } else {
+                val vector = embeddingGenerator.generateEmbedding(paragraph)
+                bookObjectsToSave.add(BookChunk(text = paragraph, embedding = vector))
+            }
         }
 
-        // 3. Save the LIST, not one by one
+        // 3. Batch Save (Much faster than put() inside the loop)
         bookBox.put(bookObjectsToSave)
 
-        // 4. Final Verification
+        // 4. Verification
+        println("DEBUG: Processed ${bookObjectsToSave.size} semantic chunks.")
         println("DEBUG: Final count in Database: ${bookBox.count()}")
-    }}
+    }
+}

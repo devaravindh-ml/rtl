@@ -1,10 +1,11 @@
-// 1. PLUGINS MUST BE AT THE TOP
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("io.objectbox")
     id("com.google.dagger.hilt.android")
     kotlin("kapt")
+
 }
 
 android {
@@ -61,7 +62,9 @@ android {
 }
 
 dependencies {
+    // 1. REMOVED the JVM datastore line that was here
     implementation(libs.androidx.remote.creation.compose)
+
     // Java desugaring (CRITICAL for Readium 3.0.0 stability)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
@@ -77,8 +80,6 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.51.1")
     kapt("com.google.dagger:hilt-compiler:2.51.1")
 
-
-
     // ObjectBox
     implementation("io.objectbox:objectbox-android:4.0.3")
     implementation("io.objectbox:objectbox-kotlin:4.0.3")
@@ -93,13 +94,16 @@ dependencies {
 
     // --- Readium Toolkit 3.0.0 ---
     val readiumVersion = "3.0.0"
+
     implementation("org.readium.kotlin-toolkit:readium-shared:$readiumVersion")
     implementation("org.readium.kotlin-toolkit:readium-streamer:$readiumVersion")
-    implementation("org.readium.kotlin-toolkit:readium-navigator:$readiumVersion")
-    // ADDED: Needed for PDF asset support within the Readium model
     implementation("org.readium.kotlin-toolkit:readium-adapter-pdfium:$readiumVersion")
 
-    
+    // Navigator with the EXCLUDE rule (Only list this ONCE)
+    implementation("org.readium.kotlin-toolkit:readium-navigator:$readiumVersion") {
+        exclude(group = "androidx.datastore", module = "datastore-preferences-core-jvm")
+    }
+
     // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
